@@ -1,0 +1,377 @@
+{
+    "info": {
+        "_postman_id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+        "name": "ProductAPI_JPA",
+        "description": "Postman Collection hoàn chỉnh kiểm thử tự động hệ thống Product REST API với Spring Data JPA.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "1. GET - Danh sách ban đầu rỗng",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/products",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "products"
+                    ]
+                },
+                "description": "Kiểm tra danh sách sản phẩm ban đầu phải rỗng."
+            },
+            "response": [],
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code là 200 OK\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test(\"Danh sách ban đầu trả về một mảng rỗng\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.be.an('array');",
+                            "    pm.expect(jsonData.length).to.eql(0);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "2. POST - Thêm mới sản phẩm thành công",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"name\": \"Sách Lập Trình Spring Boot\",\n    \"price\": 150000\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/products",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "products"
+                    ]
+                },
+                "description": "Thêm mới sản phẩm hợp lệ, lưu lại ID để test chuỗi endpoint tiếp theo."
+            },
+            "response": [],
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code là 21 Created\", function () {",
+                            "    pm.response.to.have.status(201);",
+                            "});",
+                            "",
+                            "pm.test(\"Response phải chứa trường 'id' hợp lệ\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.have.property('id');",
+                            "    // Lưu ID sản phẩm vào biến môi trường tập hợp (Collection Variable)",
+                            "    pm.collectionVariables.set(\"productId\", jsonData.id);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "3. POST - Thêm mới lỗi Validation (Tên rỗng)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"name\": \"\",\n    \"price\": 50000\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/products",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "products"
+                    ]
+                },
+                "description": "Kiểm tra dữ liệu lỗi Validation trả về 400 Bad Request."
+            },
+            "response": [],
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code phải là 400 Bad Request\", function () {",
+                            "    pm.response.to.have.status(400);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "4. GET - Chi tiết sản phẩm theo ID vừa tạo",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/products/{{productId}}",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "products",
+                        "{{productId}}"
+                    ]
+                },
+                "description": "Lấy thông tin chi tiết bằng biến productId."
+            },
+            "response": [],
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code là 200 OK\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test(\"Response trả về đúng ID sản phẩm đã yêu cầu\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.id).to.eql(pm.collectionVariables.get(\"productId\"));",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "5. GET - Chi tiết sản phẩm với ID không tồn tại",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/products/9999",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "products",
+                        "9999"
+                    ]
+                },
+                "description": "Kiểm tra tìm kiếm ID giả lập không tồn tại trả về lỗi 404."
+            },
+            "response": [],
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code phải là 404 Not Found\", function () {",
+                            "    pm.response.to.have.status(404);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "6. PUT - Cập nhật toàn bộ sản phẩm",
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"name\": \"Sách Spring Boot Nâng Cao\",\n    \"price\": 199000\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/products/{{productId}}",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "products",
+                        "{{productId}}"
+                    ]
+                },
+                "description": "Cập nhật thay thế toàn bộ thông tin sản phẩm."
+            },
+            "response": [],
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code là 200 OK\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test(\"Dữ liệu tên và giá đã được cập nhật mới thành công\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.name).to.eql(\"Sách Spring Boot Nâng Cao\");",
+                            "    pm.expect(jsonData.price).to.eql(199000);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "7. PATCH - Cập nhật một phần (Thay đổi giá)",
+            "request": {
+                "method": "PATCH",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"price\": 220000\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/products/{{productId}}",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "products",
+                        "{{productId}}"
+                    ]
+                },
+                "description": "Cập nhật một phần thông tin (chỉ thay đổi giá tiền)."
+            },
+            "response": [],
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code là 200 OK\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test(\"Kiểm tra giá đã đổi nhưng tên cũ không bị mất\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.price).to.eql(220000);",
+                            "    pm.expect(jsonData.name).to.eql(\"Sách Spring Boot Nâng Cao\");",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "8. DELETE - Xóa sản phẩm theo ID",
+            "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/products/{{productId}}",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "products",
+                        "{{productId}}"
+                    ]
+                },
+                "description": "Thực hiện xóa bản ghi khỏi CSDL."
+            },
+            "response": [],
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code phải là 204 No Content\", function () {",
+                            "    pm.response.to.have.status(204);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "9. GET - Kiểm tra lại ID sau khi xóa",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/products/{{productId}}",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "products",
+                        "{{productId}}"
+                    ]
+                },
+                "description": "Gọi lại ID vừa xóa để xác thực DB đã trống."
+            },
+            "response": [],
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Xác thực status code phải trả về 404 Not Found\", function () {",
+                            "    pm.response.to.have.status(404);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8080",
+            "type": "string"
+        },
+        {
+            "key": "productId",
+            "value": "",
+            "type": "string"
+        }
+    ]
+}
